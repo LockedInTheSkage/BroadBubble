@@ -83,7 +83,8 @@ to new-infobits
 end
 
 to initialize-guy
-  set shape "face happy"
+  set shape "dot"
+  set size 3
   setxy random-xcor  ifelse-value (dims = 1) [0] [random-ycor]
   set fluctuation 0
 end
