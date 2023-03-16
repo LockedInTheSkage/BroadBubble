@@ -1,4 +1,4 @@
-extensions [nw]
+extensions [nw array]
 globals [communities]
 breed [guys guy]
 breed [infobits infobit]
@@ -6,7 +6,7 @@ undirected-link-breed [friends friend]
 undirected-link-breed [infolinks infolink]
 undirected-link-breed [infosharers infosharer]
 
-guys-own [group fluctuation oldxcor oldycor]
+guys-own [group fluctuation oldxcor oldycor is-influencer feed feed-pointer]
 infobits-own [popularity]
 
 to setup
@@ -29,6 +29,9 @@ to go
   if posting [ ask guys [ post-infobit ] ] ; Step 2
   if birth-death-probability > 0 [ birth-death ] ; Step 3.1
   if refriend-probability > 0 [ refriend ] ; Step 3.2
+  if feed-system [
+    ask guys [choose-feed-info]
+  ]
   update-infobits
   visualize
   if ticks mod plot-update-every = 0 [
@@ -37,6 +40,24 @@ to go
   ]
   tick-advance 1
   if ticks = stop-tick [stop]
+end
+
+to choose-feed-info
+  let record-pop 0
+  let popular-info "null"
+  foreach array:to-list feed [
+    [the-info] ->
+    if the-info != "null" and the-info != nobody[
+      let info-pop [popularity] of the-info
+      if (record-pop <= info-pop) [
+        set record-pop [popularity] of the-info
+        set popular-info the-info
+      ]
+    ]
+  ]
+  if popular-info != "null"[
+    integrate popular-info
+  ]
 end
 
 to make-group-network ;; for individuals
@@ -74,12 +95,28 @@ to new-infobits
         [infobits with [distance myself / (max-pxcor + 0.5) < acceptance-latitude and not infolink-neighbor? myself]]
         [infobits with [distance myself / (max-pxcor + 0.5) >= acceptance-latitude and not infolink-neighbor? myself]]
       ifelse fitting-infobits = no-turtles or count infobits < numguys [
-          hatch-infobits 1 [
-            initialize-infobit
-            ask myself [try-integrate-infobit myself] ; first myself is guy, second myself is the new infobit
-      ]] [
+          create-and-spread-infobit
+      ] [
         try-integrate-infobit one-of fitting-infobits
   ]]]
+  if new-info-mode = "influencer" [ ; influencer sharing method. Other guys can also post, but less frequently based on influencer dominance
+    ask guys [
+      ifelse is-influencer[
+        create-and-spread-infobit
+      ][
+        if random-float 1 > influencer-dominance[
+          create-and-spread-infobit
+        ]
+      ]
+    ]
+  ]
+end
+
+to create-and-spread-infobit
+  hatch-infobits 1[
+    initialize-infobit
+    ask myself [try-integrate-infobit myself] ; first myself is guy, second myself is the new infobit
+  ]
 end
 
 to initialize-guy
@@ -87,6 +124,12 @@ to initialize-guy
   set size 3
   setxy random-xcor  ifelse-value (dims = 1) [0] [random-ycor]
   set fluctuation 0
+  set is-influencer false
+  set feed array:from-list n-values feed-size ["null"]
+  set feed-pointer 0
+  if random-float 1 < influencer-share [
+    set is-influencer true
+  ]
 end
 
 to initialize-infobit
@@ -103,11 +146,26 @@ to post-infobit
 ]
 end
 
+to integrate [newinfobit]
+  if count my-infolinks >= memory [ask one-of my-infolinks [die] ]
+  create-infolink-with newinfobit
+  setxy mean [xcor] of infolink-neighbors mean [ycor] of infolink-neighbors
+end
+
 to try-integrate-infobit [newinfobit]
   if random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness [
-    if count my-infolinks >= memory [ask one-of my-infolinks [die] ]
-    create-infolink-with newinfobit
-    setxy mean [xcor] of infolink-neighbors mean [ycor] of infolink-neighbors
+    ifelse feed-system [
+
+      array:set feed feed-pointer newinfobit
+      set feed-pointer (feed-pointer + 1)
+
+      if feed-pointer = feed-size [
+        set feed-pointer 0
+      ]
+
+    ][
+    integrate newinfobit
+    ]
   ]
 end
 
@@ -214,6 +272,7 @@ to baseline-settings
   set numcentral 1
   set stop-tick 10000
   set plot-update-every 201
+  set influencer-share 0.01
 end
 
 to baseline-visualization
@@ -232,10 +291,10 @@ to-report integration-probability [dist lambda k]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-463
-42
-900
-480
+457
+43
+894
+481
 -1
 -1
 13.0
@@ -245,8 +304,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-0
-0
+1
+1
 1
 -16
 16
@@ -308,10 +367,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-10
-399
-253
-432
+11
+402
+254
+435
 memory
 memory
 2
@@ -351,7 +410,7 @@ SWITCH
 148
 show-infolinks
 show-infolinks
-1
+0
 1
 -1000
 
@@ -389,7 +448,7 @@ acceptance-latitude
 acceptance-latitude
 0.02
 1
-0.5
+0.3
 0.02
 1
 NIL
@@ -430,14 +489,14 @@ CHOOSER
 520
 new-info-mode
 new-info-mode
-"individual" "central" "select close infobits" "select distant infobits"
+"individual" "central" "select close infobits" "select distant infobits" "influencer"
 1
 
 SLIDER
-10
-645
-252
-678
+7
+642
+249
+675
 birth-death-probability
 birth-death-probability
 0
@@ -459,23 +518,23 @@ Remember parameters
 1
 
 TEXTBOX
-13
-564
-272
-582
+8
+560
+267
+578
 2) Post one infobit to social network
 12
 0.0
 1
 
 SWITCH
-13
-582
-252
-615
+10
+579
+249
+612
 posting
 posting
-1
+0
 1
 -1000
 
@@ -763,10 +822,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-10
-682
-253
-715
+7
+679
+250
+712
 refriend-probability
 refriend-probability
 0
@@ -806,10 +865,10 @@ NIL
 1
 
 TEXTBOX
-14
-625
-191
-643
+11
+622
+188
+640
 3) Turn-over and refriending
 12
 0.0
@@ -960,7 +1019,7 @@ INPUTBOX
 251
 270
 stop-tick
-10000.0
+50000.0
 1
 0
 Number
@@ -1131,7 +1190,7 @@ BUTTON
 1131
 505
 6
-baseline-settings\nset new-info-mode \"select distant infobits\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"influencer\"\nset posting false\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1243,6 +1302,82 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+7
+772
+247
+805
+influencer-share
+influencer-share
+0
+1
+0.01
+0.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+8
+735
+247
+768
+influencer-dominance
+influencer-dominance
+0
+1
+0.84
+0.01
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+10
+716
+160
+734
+4) Influencers
+12
+0.0
+1
+
+SLIDER
+8
+835
+180
+868
+feed-size
+feed-size
+1
+10
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+9
+812
+159
+830
+5) Feed
+12
+0.0
+1
+
+SWITCH
+10
+873
+128
+906
+feed-system
+feed-system
+0
+1
+-1000
 
 @#$#@#$#@
 # Triple Filter Bubble Model
@@ -1660,7 +1795,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.3.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
