@@ -5,9 +5,10 @@ breed [infobits infobit]
 undirected-link-breed [friends friend]
 undirected-link-breed [infolinks infolink]
 undirected-link-breed [infosharers infosharer]
+undirected-link-breed [seenlinks seenlink]
 
 guys-own [group fluctuation oldxcor oldycor is-influencer feed feed-pointer]
-infobits-own [popularity]
+infobits-own [popularity likes]
 
 to setup
   clear-all
@@ -45,17 +46,31 @@ end
 to choose-feed-info
   let record-pop 0
   let popular-info "null"
+  let index 0
+  let pop-index 0
+  let valued-amount 0
   foreach array:to-list feed [
     [the-info] ->
     if the-info != "null" and the-info != nobody[
-      let info-pop [popularity] of the-info
+      let info-pop 0
+      if like-mode = "views"[
+        set info-pop [popularity] of the-info
+      ]
+      if like-mode = "likes" or like-mode = "likes and dislikes"[
+        set info-pop [likes] of the-info
+      ]
+
       if (record-pop <= info-pop) [
-        set record-pop [popularity] of the-info
+        set valued-amount (valued-amount + 1)
+        set record-pop info-pop
         set popular-info the-info
+        set pop-index index
       ]
     ]
+    set index (index + 1)
   ]
   if popular-info != "null"[
+    array:set feed pop-index "null"
     integrate popular-info
   ]
 end
@@ -137,6 +152,7 @@ to initialize-infobit
   set color grey
   setxy random-xcor ifelse-value (dims = 1) [0] [random-ycor]
   set popularity 0
+  set likes 0
 end
 
 to post-infobit
@@ -148,23 +164,33 @@ end
 
 to integrate [newinfobit]
   if count my-infolinks >= memory [ask one-of my-infolinks [die] ]
+  if like-rate > random-float 1 and like-mode = "likes"[
+    ask newinfobit[set likes (likes + 1)]
+  ]
   create-infolink-with newinfobit
+  if less-rewatch[
+    create-seenlink-with newinfobit
+  ]
   setxy mean [xcor] of infolink-neighbors mean [ycor] of infolink-neighbors
 end
 
 to try-integrate-infobit [newinfobit]
-  if random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness [
-    ifelse feed-system [
-
-      array:set feed feed-pointer newinfobit
-      set feed-pointer (feed-pointer + 1)
-
-      if feed-pointer = feed-size [
-        set feed-pointer 0
+  if (not less-rewatch) or (less-rewatch and ((not any? seenlink-neighbors with [self = newinfobit]) or rewatch-rate > random-float 1))[
+  ifelse (random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness)
+    [
+      ifelse feed-system [
+        array:set feed feed-pointer newinfobit
+        set feed-pointer (feed-pointer + 1)
+        if feed-pointer = feed-size [
+          set feed-pointer 0
+        ]
+      ][
+        integrate newinfobit
       ]
-
     ][
-    integrate newinfobit
+      if dislike-rate > random-float 1 and (like-mode = "likes and dislikes")[
+        ask newinfobit[set likes (likes - 1)]
+      ]
     ]
   ]
 end
@@ -490,7 +516,7 @@ CHOOSER
 new-info-mode
 new-info-mode
 "individual" "central" "select close infobits" "select distant infobits" "influencer"
-1
+2
 
 SLIDER
 7
@@ -1019,7 +1045,7 @@ INPUTBOX
 251
 270
 stop-tick
-50000.0
+10000.0
 1
 0
 Number
@@ -1327,7 +1353,7 @@ influencer-dominance
 influencer-dominance
 0
 1
-0.84
+0.79
 0.01
 1
 NIL
@@ -1359,10 +1385,10 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-9
-812
-159
-830
+14
+815
+164
+833
 5) Feed
 12
 0.0
@@ -1378,6 +1404,82 @@ feed-system
 0
 1
 -1000
+
+SLIDER
+132
+873
+304
+906
+rewatch-rate
+rewatch-rate
+0
+1
+0.1
+0.001
+1
+NIL
+HORIZONTAL
+
+SWITCH
+183
+835
+303
+868
+less-rewatch
+less-rewatch
+0
+1
+-1000
+
+CHOOSER
+330
+841
+469
+886
+like-mode
+like-mode
+"views" "likes" "likes and dislikes"
+0
+
+TEXTBOX
+322
+811
+472
+829
+6) Likes
+12
+0.0
+1
+
+SLIDER
+499
+842
+671
+875
+like-rate
+like-rate
+0
+1
+0.159
+0.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+499
+878
+671
+911
+dislike-rate
+dislike-rate
+0
+1
+0.108
+0.001
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 # Triple Filter Bubble Model
