@@ -230,6 +230,7 @@ to visualize
   ifelse show-people [ask guys [show-turtle]] [ask guys [hide-turtle]]
   ifelse show-infobits [ask infobits [show-turtle]] [ask infobits [hide-turtle]]
   ifelse show-infolinks [ask infolinks [show-link]] [ask infolinks [hide-link]]
+  ifelse show-seenlinks [ask seenlinks [show-link]] [ask seenlinks [hide-link]]
   ifelse show-infosharer-links [
     create-infosharer-network
     ask infosharers [show-link]
@@ -306,6 +307,7 @@ to baseline-visualization
   set show-infobits false
   set infobit-size false
   set show-infolinks true
+  set show-seenlinks false
   set show-friend-links false
   set show-infosharer-links false
   set patch-color "white"
@@ -429,6 +431,17 @@ SWITCH
 show-infolinks
 show-infolinks
 0
+1
+-1000
+
+SWITCH
+1100
+114
+1218
+147
+show-seenlinks
+show-seenlinks
+1
 1
 -1000
 
@@ -651,6 +664,17 @@ MONITOR
 502
 # infobits
 count infobits
+17
+1
+11
+
+MONITOR
+365
+457
+437
+502
+# seenlinks
+count seenlinks
 17
 1
 11
