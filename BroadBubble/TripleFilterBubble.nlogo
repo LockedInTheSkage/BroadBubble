@@ -114,17 +114,6 @@ to new-infobits
       ] [
         try-integrate-infobit one-of fitting-infobits
   ]]]
-  if new-info-mode = "influencer" [ ; influencer sharing method. Other guys can also post, but less frequently based on influencer dominance
-    ask guys [
-      ifelse is-influencer[
-        create-and-spread-infobit
-      ][
-        if random-float 1 > influencer-dominance[
-          create-and-spread-infobit
-        ]
-      ]
-    ]
-  ]
 end
 
 to create-and-spread-infobit
@@ -139,12 +128,9 @@ to initialize-guy
   set size 3
   setxy random-xcor  ifelse-value (dims = 1) [0] [random-ycor]
   set fluctuation 0
-  set is-influencer false
+  set is-influencer random-float 1 < influencer-share
   set feed array:from-list n-values feed-size ["null"]
   set feed-pointer 0
-  if random-float 1 < influencer-share [
-    set is-influencer true
-  ]
 end
 
 to initialize-infobit
@@ -158,13 +144,17 @@ end
 to post-infobit
   if any? infolink-neighbors [
     let postedinfo one-of infolink-neighbors
-    ask friend-neighbors [ try-integrate-infobit postedinfo ]
+    ifelse is-influencer[
+      ask guys [ if influencer-dominance > random-float 1 [try-integrate-infobit postedinfo] ]
+    ][
+      ask friend-neighbors [ try-integrate-infobit postedinfo ]
+    ]
 ]
 end
 
 to integrate [newinfobit]
   if count my-infolinks >= memory [ask one-of my-infolinks [die] ]
-  if like-rate > random-float 1 and like-mode = "likes"[
+  if like-rate > random-float 1[
     ask newinfobit[set likes (likes + 1)]
   ]
   create-infolink-with newinfobit
@@ -178,6 +168,9 @@ to try-integrate-infobit [newinfobit]
   if (not less-rewatch) or (less-rewatch and ((not any? seenlink-neighbors with [self = newinfobit]) or rewatch-rate > random-float 1))[
   ifelse (random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness)
     [
+      if like-rate > random-float 1[
+        ask newinfobit[set likes (likes + 1)]
+      ]
       ifelse feed-system [
         array:set feed feed-pointer newinfobit
         set feed-pointer (feed-pointer + 1)
@@ -284,6 +277,16 @@ to re-color-group
   ask guys [set color group * 30 + 25]
 end
 
+to re-color-influencer
+  ask guys [
+    ifelse is-influencer [
+      set color red
+    ][
+      set color [128 128 128 60]
+    ]
+  ]
+end
+
 to baseline-settings
   set memory 20
   set acceptance-latitude 0.3
@@ -332,8 +335,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 -16
 16
@@ -378,7 +381,6 @@ NIL
 NIL
 NIL
 1
-
 
 TEXTBOX
 965
@@ -471,7 +473,7 @@ CHOOSER
 960
 222
 1218
-271
+267
 patch-color
 patch-color
 "white" "frequency infobits" "frequency guys"
@@ -619,11 +621,11 @@ NIL
 1
 
 BUTTON
-307
-759
-419
-792
-re-color groups
+281
+758
+357
+791
+groups re-color
 re-color-group
 NIL
 1
@@ -713,7 +715,6 @@ false
 "" ""
 PENS
 "default" 1.0 1 -16777216 true "" "clear-plot\n(foreach (range 1 (1 + length communities)) (reverse sort map count communities) [ [x y] -> plotxy x y])"
-
 
 MONITOR
 988
@@ -828,7 +829,7 @@ SLIDER
 155
 122
 252
-167
+155
 numgroups
 numgroups
 1
@@ -937,8 +938,8 @@ CHOOSER
 520
 new-info-mode
 new-info-mode
-"individual" "central" "select close infobits" "select distant infobits" "influencer"
-2
+"individual" "central" "select close infobits" "select distant infobits"
+0
 
 SLIDER
 155
@@ -969,7 +970,7 @@ SWITCH
 10
 561
 252
-612
+594
 posting
 posting
 0
@@ -1242,7 +1243,7 @@ BUTTON
 1131
 505
 6
-baseline-settings\nset new-info-mode \"influencer\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select distant infobits\"\nset posting false\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1374,7 +1375,7 @@ influencer-dominance
 influencer-dominance
 0
 1
-0.8
+0.0
 0.01
 1
 NIL
@@ -1389,7 +1390,7 @@ influencer-share
 influencer-share
 0
 1
-0.01
+0.106
 0.001
 1
 NIL
@@ -1427,7 +1428,7 @@ SWITCH
 868
 feed-system
 feed-system
-0
+1
 1
 -1000
 
@@ -1440,7 +1441,7 @@ rewatch-rate
 rewatch-rate
 0
 1
-0.1
+0.098
 0.001
 1
 NIL
@@ -1453,7 +1454,7 @@ SWITCH
 904
 less-rewatch
 less-rewatch
-0
+1
 1
 -1000
 
@@ -1475,7 +1476,7 @@ CHOOSER
 like-mode
 like-mode
 "views" "likes" "likes and dislikes"
-0
+1
 
 SLIDER
 10
@@ -1486,7 +1487,7 @@ like-rate
 like-rate
 0
 1
-0.159
+0.626
 0.001
 1
 NIL
@@ -1591,6 +1592,23 @@ variance-post-random-tags
 1
 NIL
 HORIZONTAL
+
+BUTTON
+360
+758
+436
+791
+influencer re-color
+re-color-influencer
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 # Triple Filter Bubble Model
