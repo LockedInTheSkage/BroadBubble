@@ -99,11 +99,8 @@ to new-infobits
         try-integrate-infobit myself
   ]]]
   if new-info-mode = "individual" [
-    ask guys [
-      hatch-infobits 1 [
-        initialize-infobit
-        ask myself [try-integrate-infobit myself] ; first myself is guy, second myself is the new infobit
-  ]]]
+    ask guys [create-and-spread-infobit
+  ]]
   if new-info-mode = "select close infobits" or new-info-mode = "select distant infobits" [
     ask guys [
       let fitting-infobits ifelse-value (new-info-mode = "select close infobits")
