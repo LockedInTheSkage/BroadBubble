@@ -7,8 +7,8 @@ undirected-link-breed [infolinks infolink]
 undirected-link-breed [infosharers infosharer]
 undirected-link-breed [seenlinks seenlink]
 
-guys-own [group fluctuation oldxcor oldycor is-influencer feed feed-pointer]
-infobits-own [popularity likes]
+guys-own [group fluctuation oldxcor oldycor is-influencer feed feed-pointer owntags]
+infobits-own [popularity likes tags]
 
 to setup
   clear-all
@@ -128,6 +128,7 @@ to initialize-guy
   set is-influencer random-float 1 < influencer-share
   set feed array:from-list n-values feed-size ["null"]
   set feed-pointer 0
+  set owntags n-values (round max list 0 (random-normal mean-owntags stdev-owntags)) [random numtags]
 end
 
 to initialize-infobit
@@ -141,6 +142,15 @@ end
 to post-infobit
   if any? infolink-neighbors [
     let postedinfo one-of infolink-neighbors
+    let agenttags owntags
+    ask postedinfo [
+      if tags = 0 or length tags <= 0 [
+        set tags sentence (up-to-n-of (max list 0 (random-normal mean-post-owntags stdev-post-owntags)) agenttags) (n-values (round max list 0 (random-normal mean-post-randomtags stdev-post-randomtags)) [random numtags])
+        if length tags > 0 [
+          set color reduce [ [a b] -> (map [ [x y] -> (x + y) mod 255 ] a b) ] (sentence (map [ t -> (list (t * 13) t (t * 37)) ] (map [ t -> t + 1 ] tags)))
+        ]
+      ]
+    ]
     ifelse is-influencer[
       ask guys [ if influencer-dominance > random-float 1 [try-integrate-infobit postedinfo] ]
     ][
@@ -1535,8 +1545,38 @@ SLIDER
 1125
 152
 1158
-mean-post-own-tags
-mean-post-own-tags
+mean-owntags
+mean-owntags
+0
+40
+3.5
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+155
+1125
+252
+1158
+stdev-owntags
+stdev-owntags
+0
+10
+1.8
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+10
+1171
+152
+1204
+mean-post-owntags
+mean-post-owntags
 0
 10
 1.8
@@ -1547,11 +1587,11 @@ HORIZONTAL
 
 SLIDER
 155
-1125
+1171
 252
-1158
-variance-post-own-tags
-variance-post-own-tags
+1204
+stdev-post-owntags
+stdev-post-owntags
 0
 10
 1.0
@@ -1562,11 +1602,11 @@ HORIZONTAL
 
 SLIDER
 10
-1161
+1207
 152
-1194
-mean-post-random-tags
-mean-post-random-tags
+1240
+mean-post-randomtags
+mean-post-randomtags
 0
 10
 1.8
@@ -1577,11 +1617,11 @@ HORIZONTAL
 
 SLIDER
 155
-1161
+1207
 252
-1194
-variance-post-random-tags
-variance-post-random-tags
+1240
+stdev-post-randomtags
+stdev-post-randomtags
 0
 10
 1.0
