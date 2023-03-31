@@ -939,7 +939,7 @@ CHOOSER
 new-info-mode
 new-info-mode
 "individual" "central" "select close infobits" "select distant infobits"
-2
+0
 
 SLIDER
 155
@@ -1390,7 +1390,7 @@ influencer-share
 influencer-share
 0
 1
-0.01
+0.0
 0.001
 1
 NIL
