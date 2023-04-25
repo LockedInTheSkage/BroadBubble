@@ -1728,9 +1728,18 @@ NIL
 
 This model is the basis of the paper
 
+**Broadening the Bubble: Technological Countermeasures to Isolation in an Agent-based Simulation of Social Media**
+
+by _Aksel Saugestad, Skage Klingstedt Reistad, Vira Antonova, Ovidiu Victor Tatar, Md. Anwarul Hasan_
+
+It is itsself an extension of the model provided by and discussed in the paper
+
 **The triple filter bubble: Using agent-based modeling to test a meta-theoretical framework for the emergence of filter bubbles and echo chambers**
 
 by _Daniel Geschke, Jan Lorenz, Peter Holtz_
+
+Some aspects of our extensions are explained in our research paper mentioned above.
+**All further details described here are from the original paper! We did not update this description.**
 
 We call it **triple filter bubble model** because information needs to pass three filters to reach our memories: Bits of information come to our attention through technology (including mass media, and filter algorithms), through our social network, and they have to pass the cognitive filters in our brains. This model is to test via simulations how these filters interact when information is attitudinally loaded and what this implies for the emerging distribution of attitudes in the population, e.g., concerning filter bubbles and echo chambers.
 
