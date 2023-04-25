@@ -27,7 +27,7 @@ end
 
 to go
   new-infobits ; Step 1
-  if posting [ ask guys [ post-infobit ] ] ; Step 2
+  if friend-posting-probability > 0 or influencer-dominance > 0 [ ask guys [ post-infobit ] ] ; Step 2
   if birth-death-probability > 0 [ birth-death ] ; Step 3.1
   if refriend-probability > 0 [ refriend ] ; Step 3.2
   if feed-system [
@@ -150,7 +150,7 @@ to initialize-infobit
 end
 
 to post-infobit
-  if any? infolink-neighbors [
+  if any? infolink-neighbors and (is-influencer or random-float 1 < friend-posting-probability) [
     let postedinfo one-of infolink-neighbors
     let agenttags owntags
     ask postedinfo [
@@ -1063,21 +1063,25 @@ TEXTBOX
 560
 273
 578
-3) Post one infobit to social network
+3) Post one infobit to friend network
 12
 0.0
 1
 
-SWITCH
+SLIDER
 10
-561
+581
 252
-594
-posting
-posting
+604
+friend-posting-probability
+friend-posting-probability
+0
+1.0
+0.0
+0.01
 1
-1
--1000
+NIL
+HORIZONTAL
 
 TEXTBOX
 14
@@ -1235,7 +1239,7 @@ BUTTON
 1075
 419
 1
-baseline-settings\nset new-info-mode \"individual\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1252,7 +1256,7 @@ BUTTON
 1132
 419
 2
-baseline-settings\nset new-info-mode \"central\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1269,7 +1273,7 @@ BUTTON
 1074
 455
 3
-baseline-settings\nset new-info-mode \"individual\"\nset posting true\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1286,7 +1290,7 @@ BUTTON
 1132
 455
 4
-baseline-settings\nset new-info-mode \"central\"\nset posting true\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1303,7 +1307,7 @@ BUTTON
 1073
 505
 5
-baseline-settings\nset new-info-mode \"select close infobits\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select close infobits\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1320,7 +1324,7 @@ BUTTON
 1131
 505
 6
-baseline-settings\nset new-info-mode \"select distant infobits\"\nset posting false\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select distant infobits\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1337,7 +1341,7 @@ BUTTON
 1073
 541
 7
-baseline-settings\nset new-info-mode \"select close infobits\"\nset posting true\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select close infobits\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1354,7 +1358,7 @@ BUTTON
 1131
 541
 8
-baseline-settings\nset new-info-mode \"select distant infobits\"\nset posting true\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select distant infobits\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1371,7 +1375,7 @@ BUTTON
 1071
 595
 9
-baseline-settings\nset new-info-mode \"individual\"\nset posting true\nset refriend-probability 0.01\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset refriend-probability 0.01\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1388,7 +1392,7 @@ BUTTON
 1130
 595
 10
-baseline-settings\nset new-info-mode \"individual\"\nset posting true\nset refriend-probability 1\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset refriend-probability 1\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1405,7 +1409,7 @@ BUTTON
 1072
 644
 11
-baseline-settings\nset new-info-mode \"individual\"\nset posting true\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1422,7 +1426,7 @@ BUTTON
 1130
 644
 12
-baseline-settings\nset new-info-mode \"central\"\nset posting false\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.0\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1777,7 +1781,7 @@ In the _central_ mode, one info-bit is created at random in the attitude space a
 
 In the two remaining modes _select close info-bits_ and _select distant info-bits_, a new random info-bit is created and presented to each guy analogously to the _individual_ mode until the total number of info-bits is equal to the number of guys. This can take some ticks, because info-bits are not always integrated by guys. If the number of info-bits is equal to the number of guys, each guy is presented a random existing info-bit which is inside (in the mode _select close info-bits_) or outside (in the mode _select distant info-bits_) a radius of size acceptance-latitude around the guy's attitude position. This represents the use of a recommendation algorithm that aims to present info-bits which the receiver will integrate with a probability higher than 0.5 (_select close info-bits_) or, respectively, an info-bit which confronts the guy with very different (but perhaps interesting) information. Thus, the number of potential new info-links per guy per tick is one in all of the modes, while the total number of new info-bits per tick varies.
 
-2) _Guys post info-bits to their friends._ If **posting** is activated, all guys, one after the other in a random order, select a random info-bit from their memory and post it to all friends in their social network. All of their friends try to integrate the new info-bit, which represents the propagation of information through social media. When posting is switched on, a guy receives on average numfriends additional info-bits per tick.
+2) _Guys post info-bits to their friends._ If **friend-posting-probability** is activated, all guys, one after the other in a random order, select a random info-bit from their memory and post it to all friends in their social network. All of their friends try to integrate the new info-bit, which represents the propagation of information through social media. When friend-posting-probability is switched on, a guy receives on average numfriends additional info-bits per tick.
 
 3) _Turn-over and refriending_  Each guy dies with probability **birth-death-probability** and is replaced by a new guy in a random position in the attitude space. Friend-links are inherited from the old guy created for the new guy such that the characteristics of the social network are preserved. New guys start with no info-links.
 
