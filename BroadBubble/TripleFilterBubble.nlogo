@@ -35,12 +35,22 @@ to go
   ]
   update-infobits
   visualize
-  if ticks mod plot-update-every = 0 [
-    create-infosharer-network
+  if ticks mod recalculate-shared-infobits-every = 0 [
+    recalculate-infosharer-network
+  ]
+  if ticks mod update-plots-every = 0 [
     update-plots
   ]
   tick-advance 1
-  if ticks = stop-tick [stop]
+  if ticks = stop-tick [
+    beep
+    stop
+  ]
+  if guydist-entropy <= pause-entropy [
+    set pause-entropy 0
+    beep
+    stop
+  ]
 end
 
 to choose-feed-info
@@ -236,7 +246,7 @@ to visualize
   ifelse show-infolinks [ask infolinks [show-link]] [ask infolinks [hide-link]]
   ifelse show-seenlinks [ask seenlinks [show-link]] [ask seenlinks [hide-link]]
   ifelse show-infosharer-links [
-    create-infosharer-network
+    recalculate-infosharer-network
     ask infosharers [show-link]
   ] [
     ask infosharers [hide-link]
@@ -250,7 +260,7 @@ to visualize
   ]
 end
 
-to create-infosharer-network
+to recalculate-infosharer-network
   ask infosharers [die]
   ask guys [if any? infolink-neighbors [create-infosharers-with other (turtle-set [infolink-neighbors] of infolink-neighbors) [
     set color black
@@ -259,7 +269,7 @@ to create-infosharer-network
 end
 
 to infosharer-community-color
-  create-infosharer-network
+  recalculate-infosharer-network
   nw:set-context guys infosharers
   set communities nw:louvain-communities
   computed-community-color
@@ -312,7 +322,8 @@ to baseline-settings
   set refriend-probability 0
   set numcentral 2
   set stop-tick 10000
-  set plot-update-every 201
+  set update-plots-every 200
+  set recalculate-shared-infobits-every 200
   set influencer-share 0.01
 end
 
@@ -358,40 +369,6 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
-
-BUTTON
-15
-217
-88
-250
-NIL
-setup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-93
-217
-156
-250
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
 
 TEXTBOX
 965
@@ -542,26 +519,6 @@ PENS
 "default" 1.0 1 -16777216 true "" "histogram [count my-friends] of guys"
 
 PLOT
-462
-546
-914
-810
-spread measures guys
-NIL
-NIL
-0.0
-10.0
-0.0
-1.0
-true
-true
-"" "set-plot-y-range 0 1"
-PENS
-"mean distance infosharers" 1.0 0 -10899396 true "" "create-infosharer-network\nplot mean [mean lput 0 [link-length] of my-infosharers] of guys / (max-pxcor + 0.5)"
-"mean distance infobits" 1.0 0 -13345367 true "" "plot mean [mean lput 0 [link-length] of infolinks] of guys / (max-pxcor + 0.5)"
-"mean distance friends" 1.0 0 -5825686 true "" "plot mean [mean lput 0 [link-length] of friends] of guys  / (max-pxcor + 0.5)"
-
-PLOT
 283
 335
 443
@@ -579,11 +536,80 @@ false
 PENS
 "default" 1.0 1 -16777216 true "" "histogram [popularity] of infobits"
 
+TEXTBOX
+514
+498
+678
+521
+Output measures
+18
+14.0
+1
+
+SLIDER
+462
+526
+639
+559
+update-plots-every
+update-plots-every
+1
+200
+200.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+650
+526
+914
+559
+recalculate-shared-infobits-every
+recalculate-shared-infobits-every
+1
+800
+200.0
+25
+1
+NIL
+HORIZONTAL
+
 PLOT
-895
+462
+570
+682
 690
-1055
-810
+guys' entropy
+NIL
+NIL
+0.0
+1.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"pen-1" 1.0 0 -16777216 true "" "plot guydist-entropy"
+
+MONITOR
+616
+590
+682
+635
+entropy
+guydist-entropy
+3
+1
+11
+
+PLOT
+694
+570
+914
+690
 fluctuation
 NIL
 NIL
@@ -596,6 +622,70 @@ false
 "" "; set-plot-y-range 0 (ceiling 1.5 * max (fput 0.1 [fluctuation] of guys))\nset-plot-y-range 0 0.1"
 PENS
 "pen-1" 1.0 0 -16777216 true "" "plot mean [fluctuation] of guys"
+
+MONITOR
+848
+590
+914
+635
+fluctation
+mean [fluctuation] of guys
+3
+1
+11
+
+PLOT
+462
+701
+914
+965
+spread measures guys
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+true
+"" "set-plot-y-range 0 1"
+PENS
+"mean distance infosharers" 1.0 0 -10899396 true "" "recalculate-infosharer-network\nplot mean [mean lput 0 [link-length] of my-infosharers] of guys / (max-pxcor + 0.5)"
+"mean distance infobits" 1.0 0 -13345367 true "" "plot mean [mean lput 0 [link-length] of infolinks] of guys / (max-pxcor + 0.5)"
+"mean distance friends" 1.0 0 -5825686 true "" "plot mean [mean lput 0 [link-length] of friends] of guys  / (max-pxcor + 0.5)"
+
+MONITOR
+730
+779
+891
+824
+mean distance infosharer
+mean [mean lput 0 [link-length] of my-infosharers] of guys  / (max-pxcor + 0.5)
+3
+1
+11
+
+MONITOR
+731
+828
+891
+873
+mean distance infolinks
+mean [mean lput 0 [link-length] of my-infolinks] of guys / (max-pxcor + 0.5)
+3
+1
+11
+
+MONITOR
+731
+877
+892
+922
+mean distance friends
+mean [mean lput 0 [link-length] of my-friends] of guys / (max-pxcor + 0.5)
+3
+1
+11
 
 BUTTON
 281
@@ -727,17 +817,6 @@ false
 PENS
 "default" 1.0 1 -16777216 true "" "clear-plot\n(foreach (range 1 (1 + length communities)) (reverse sort map count communities) [ [x y] -> plotxy x y])"
 
-MONITOR
-988
-709
-1054
-754
-fluctation
-mean [fluctuation] of guys
-3
-1
-11
-
 TEXTBOX
 289
 510
@@ -747,39 +826,6 @@ Compute communities
 12
 0.0
 1
-
-MONITOR
-730
-624
-891
-669
-mean-distance infosharer
-mean [mean lput 0 [link-length] of my-infosharers] of guys  / (max-pxcor + 0.5)
-3
-1
-11
-
-MONITOR
-731
-673
-891
-718
-mean-distance infolinks
-mean [mean lput 0 [link-length] of my-infolinks] of guys / (max-pxcor + 0.5)
-3
-1
-11
-
-MONITOR
-731
-722
-892
-767
-mean-distance friends
-mean [mean lput 0 [link-length] of my-friends] of guys / (max-pxcor + 0.5)
-3
-1
-11
 
 SLIDER
 10
@@ -867,15 +913,60 @@ NIL
 HORIZONTAL
 
 INPUTBOX
-183
-210
-251
-270
+10
+217
+78
+277
 stop-tick
 10000.0
 1
 0
 Number
+
+INPUTBOX
+84
+217
+152
+277
+pause-entropy
+4.25
+1
+0
+Number
+
+BUTTON
+155
+207
+252
+240
+NIL
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+155
+244
+252
+277
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 TEXTBOX
 14
@@ -959,9 +1050,9 @@ SLIDER
 556
 numcentral
 numcentral
-0
+1
 20
-1.0
+2.0
 1
 1
 NIL
@@ -1127,31 +1218,6 @@ Statistics
 18
 14.0
 1
-
-TEXTBOX
-514
-518
-678
-541
-Output measures
-18
-14.0
-1
-
-SLIDER
-737
-514
-914
-547
-plot-update-every
-plot-update-every
-1
-201
-201.0
-25
-1
-NIL
-HORIZONTAL
 
 TEXTBOX
 962
