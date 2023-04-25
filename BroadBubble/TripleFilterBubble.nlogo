@@ -1,5 +1,5 @@
 extensions [nw array]
-globals [communities]
+globals [communities guydist-entropy]
 breed [guys guy]
 breed [infobits infobit]
 undirected-link-breed [friends friend]
@@ -226,6 +226,10 @@ to update-infobits
 end
 
 to visualize
+  ; update entropy first
+  let patch-probabilities [ count guys-here / count guys ] of patches
+  set guydist-entropy (- sum map [ p -> ifelse-value (p != 0) [ p * ln p ] [ 0 ] ] patch-probabilities)
+
   ask guys [ set fluctuation distancexy oldxcor oldycor / (max-pxcor + 0.5)]
   ifelse show-people [ask guys [show-turtle]] [ask guys [hide-turtle]]
   ifelse show-infobits [ask infobits [show-turtle]] [ask infobits [hide-turtle]]
