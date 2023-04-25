@@ -151,8 +151,8 @@ to post-infobit
         ]
       ]
     ]
-    ifelse is-influencer[
-      ask guys [ if influencer-dominance > random-float 1 [try-integrate-infobit postedinfo] ]
+    ifelse is-influencer [
+      ask other guys [ if influencer-dominance > random-float 1 [try-integrate-infobit postedinfo] ]
     ][
       ask friend-neighbors [ try-integrate-infobit postedinfo ]
     ]
@@ -219,7 +219,7 @@ to update-infobits
   ask infobits [
     ifelse (any? infolink-neighbors) [
       set popularity count infolink-neighbors
-      ifelse infobit-size [set size sqrt popularity] [set  size 1]
+      ifelse infobit-size [set size sqrt popularity] [set size 1]
     ] [
      die
   ]]
@@ -242,7 +242,7 @@ to visualize
     ask patches [set pcolor white]
   ][
     if patch-color = "frequency infobits" and count infobits > 0 [ask patches [set pcolor scale-color gray (count infobits-here / count infobits) color-axis-max 0]]
-    if patch-color = "frequency guys" [ask patches [set pcolor scale-color yellow (count guys-here / count guys) color-axis-max 0]]
+    if patch-color = "frequency guys" [ask patches [set pcolor scale-color blue (count guys-here / count guys) color-axis-max 0]]
   ]
 end
 
@@ -306,7 +306,7 @@ to baseline-settings
   set dims 2
   set birth-death-probability 0
   set refriend-probability 0
-  set numcentral 1
+  set numcentral 2
   set stop-tick 10000
   set plot-update-every 201
   set influencer-share 0.01
