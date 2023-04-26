@@ -150,7 +150,7 @@ to initialize-infobit
 end
 
 to post-infobit
-  if any? infolink-neighbors and (is-influencer or random-float 1 < friend-posting-probability) [
+  if any? infolink-neighbors [
     let postedinfo one-of infolink-neighbors
     let agenttags owntags
     ask postedinfo [
@@ -164,7 +164,7 @@ to post-infobit
     ifelse is-influencer [
       ask other guys [ if influencer-dominance > random-float 1 [try-integrate-infobit postedinfo] ]
     ][
-      ask friend-neighbors [ try-integrate-infobit postedinfo ]
+      ask friend-neighbors [ if friend-posting-probability > random-float 1 [try-integrate-infobit postedinfo] ]
     ]
 ]
 end
