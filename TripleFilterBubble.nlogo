@@ -559,7 +559,7 @@ SLIDER
 update-plots-every
 update-plots-every
 1
-200
+600
 200.0
 1
 1
@@ -591,7 +591,7 @@ NIL
 NIL
 0.0
 1.0
-0.0
+1.0
 1.0
 true
 false
