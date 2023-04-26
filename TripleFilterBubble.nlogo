@@ -1,5 +1,5 @@
 extensions [nw array]
-globals [communities guydist-entropy]
+globals [communities guydist-entropy skip-all-visuals]
 breed [guys guy]
 breed [infobits infobit]
 undirected-link-breed [friends friend]
@@ -10,8 +10,22 @@ undirected-link-breed [seenlinks seenlink]
 guys-own [group fluctuation oldxcor oldycor is-influencer feed feed-pointer owntags]
 infobits-own [popularity likes tags]
 
+to toggle-skip-visuals
+  set skip-all-visuals not skip-all-visuals
+  if not skip-all-visuals [
+    ask infosharers [die]
+
+    ask guys [hide-turtle]
+    ask infobits [hide-turtle]
+    ask infolinks [hide-link]
+    ask seenlinks [hide-link]
+    ask friends [hide-link]
+  ]
+end
+
 to setup
   clear-all
+  set skip-all-visuals false
   if network-type = "groups" [
     create-guys numguys [ initialize-guy ]
     ask guys [ set group random numgroups ]
@@ -35,12 +49,16 @@ to go
   ]
   update-infobits
   visualize
-  if ticks mod recalculate-shared-infobits-every = 0 [
-    recalculate-infosharer-network
+
+  if not skip-all-visuals [
+    if ticks mod recalculate-shared-infobits-every = 0 [
+      recalculate-infosharer-network
+    ]
+    if ticks mod update-plots-every = 0 [
+      update-plots
+    ]
   ]
-  if ticks mod update-plots-every = 0 [
-    update-plots
-  ]
+
   tick-advance 1
   if ticks = stop-tick [
     beep
@@ -61,12 +79,12 @@ to choose-feed-info
   let valued-amount 0
   foreach array:to-list feed [
     [the-info] ->
-    if the-info != "null" and the-info != nobody[
+    if the-info != "null" and the-info != nobody [
       let info-pop 0
-      if like-mode = "views"[
+      if like-mode = "views" [
         set info-pop [popularity] of the-info
       ]
-      if like-mode = "likes" or like-mode = "likes and dislikes"[
+      if like-mode = "likes" or like-mode = "likes and dislikes" [
         set info-pop [likes] of the-info
       ]
 
@@ -101,7 +119,8 @@ to make-group-network ;; for individuals
 end
 
 to new-infobits
-  ask guys [ set oldxcor xcor set oldycor ycor ]
+  if not skip-all-visuals [ ask guys [ set oldxcor xcor set oldycor ycor ] ]
+
   if new-info-mode = "central" [
     create-infobits numcentral [
       initialize-infobit
@@ -154,7 +173,7 @@ to post-infobit
     let postedinfo one-of infolink-neighbors
     let agenttags owntags
     ask postedinfo [
-      if tags = 0 or length tags <= 0 [
+      if numtags > 0 and (tags = 0 or length tags <= 0) [
         set tags sentence (up-to-n-of (max list 0 (random-normal mean-post-owntags stdev-post-owntags)) agenttags) (n-values (round max list 0 (random-normal mean-post-randomtags stdev-post-randomtags)) [random numtags])
         if length tags > 0 [
           set color reduce [ [a b] -> (map [ [x y] -> (x + y) mod 255 ] a b) ] (sentence (map [ t -> (list (t * 13) t (t * 37)) ] (map [ t -> t + 1 ] tags)))
@@ -170,23 +189,24 @@ to post-infobit
 end
 
 to integrate [newinfobit]
-  if count my-infolinks >= memory [ask one-of my-infolinks [die] ]
-  if like-rate > random-float 1[
-    ask newinfobit[set likes (likes + 1)]
+  if like-rate > random-float 1 [
+    ask newinfobit [ set likes (likes + 1) ]
   ]
-  create-infolink-with newinfobit
-  if less-rewatch[
-    create-seenlink-with newinfobit
+  if not infolink-neighbor? newinfobit [
+    if count my-infolinks >= memory [ ask one-of my-infolinks [die] ]
+    create-infolink-with newinfobit
+    if less-rewatch [
+      create-seenlink-with newinfobit
+    ]
+    setxy mean [xcor] of infolink-neighbors mean [ycor] of infolink-neighbors
   ]
-  setxy mean [xcor] of infolink-neighbors mean [ycor] of infolink-neighbors
 end
 
 to try-integrate-infobit [newinfobit]
-  if (not less-rewatch) or (less-rewatch and ((not any? seenlink-neighbors with [self = newinfobit]) or rewatch-rate > random-float 1))[
-  ifelse (random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness)
-    [
-      if like-rate > random-float 1[
-        ask newinfobit[set likes (likes + 1)]
+  if (not less-rewatch) or (rewatch-rate > random-float 1 or not seenlink-neighbor? newinfobit) [
+    ifelse (random-float 1 < integration-probability (distance newinfobit / (max-pxcor + 0.5)) acceptance-latitude acceptance-sharpness) [
+      if like-rate > random-float 1 [
+        ask newinfobit [ set likes (likes + 1) ]
       ]
       ifelse feed-system [
         array:set feed feed-pointer newinfobit
@@ -198,8 +218,8 @@ to try-integrate-infobit [newinfobit]
         integrate newinfobit
       ]
     ][
-      if dislike-rate > random-float 1 and (like-mode = "likes and dislikes")[
-        ask newinfobit[set likes (likes - 1)]
+      if dislike-rate > random-float 1 and (like-mode = "likes and dislikes") [
+        ask newinfobit [ set likes (likes - 1) ]
       ]
     ]
   ]
@@ -236,27 +256,30 @@ to update-infobits
 end
 
 to visualize
-  ; update entropy first
+  ; update statistics first
   let patch-probabilities [ count guys-here / count guys ] of patches
   set guydist-entropy (- sum map [ p -> ifelse-value (p != 0) [ p * ln p ] [ 0 ] ] patch-probabilities)
 
-  ask guys [ set fluctuation distancexy oldxcor oldycor / (max-pxcor + 0.5)]
-  ifelse show-people [ask guys [show-turtle]] [ask guys [hide-turtle]]
-  ifelse show-infobits [ask infobits [show-turtle]] [ask infobits [hide-turtle]]
-  ifelse show-infolinks [ask infolinks [show-link]] [ask infolinks [hide-link]]
-  ifelse show-seenlinks [ask seenlinks [show-link]] [ask seenlinks [hide-link]]
-  ifelse show-infosharer-links [
-    recalculate-infosharer-network
-    ask infosharers [show-link]
-  ] [
-    ask infosharers [hide-link]
-  ]
-  ifelse show-friend-links [ask friends [show-link]] [ask friends [hide-link]]
-  ifelse patch-color = "white" or count infobits = 0 [
-    ask patches [set pcolor white]
-  ][
-    if patch-color = "frequency infobits" and count infobits > 0 [ask patches [set pcolor scale-color gray (count infobits-here / count infobits) color-axis-max 0]]
-    if patch-color = "frequency guys" [ask patches [set pcolor scale-color blue (count guys-here / count guys) color-axis-max 0]]
+  if not skip-all-visuals [
+    ask guys [ set fluctuation distancexy oldxcor oldycor / (max-pxcor + 0.5)]
+
+    ifelse show-people [ask guys [show-turtle]] [ask guys [hide-turtle]]
+    ifelse show-infobits [ask infobits [show-turtle]] [ask infobits [hide-turtle]]
+    ifelse show-infolinks [ask infolinks [show-link]] [ask infolinks [hide-link]]
+    ifelse show-seenlinks [ask seenlinks [show-link]] [ask seenlinks [hide-link]]
+    ifelse show-infosharer-links [
+      recalculate-infosharer-network
+      ask infosharers [show-link]
+    ] [
+      ask infosharers [hide-link]
+    ]
+    ifelse show-friend-links [ask friends [show-link]] [ask friends [hide-link]]
+    ifelse patch-color = "white" or count infobits = 0 [
+      ask patches [set pcolor white]
+    ][
+      if patch-color = "frequency infobits" and count infobits > 0 [ask patches [set pcolor scale-color gray (count infobits-here / count infobits) color-axis-max 0]]
+      if patch-color = "frequency guys" [ask patches [set pcolor scale-color blue (count guys-here / count guys) color-axis-max 0]]
+    ]
   ]
 end
 
@@ -385,8 +408,36 @@ Visualization parameters
 14.0
 1
 
-SWITCH
+MONITOR
+1035
+30
+1098
+75
+ skipped
+skip-all-visuals
+17
+1
+11
+
+BUTTON
 960
+42
+1033
+75
+skip visuals
+toggle-skip-visuals
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SWITCH
+1100
 42
 1218
 75
@@ -1452,7 +1503,6 @@ NIL
 NIL
 1
 
-
 TEXTBOX
 1100
 396
@@ -1730,7 +1780,7 @@ like-rate
 like-rate
 0
 1
-0.626
+0.6
 0.001
 1
 NIL
@@ -1745,7 +1795,7 @@ dislike-rate
 dislike-rate
 0
 1
-0.108
+0.1
 0.001
 1
 NIL
