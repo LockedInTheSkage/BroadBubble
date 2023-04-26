@@ -325,6 +325,11 @@ to baseline-settings
   set update-plots-every 200
   set recalculate-shared-infobits-every 200
   set influencer-share 0.01
+  set influencer-dominance 0.0
+  set friend-posting-probability 0.0
+  set like-rate 0.6
+  set dislike-rate 0.1
+  set feed-system false
 end
 
 to baseline-visualization
@@ -1072,7 +1077,7 @@ SLIDER
 10
 581
 252
-604
+614
 friend-posting-probability
 friend-posting-probability
 0
@@ -1224,20 +1229,30 @@ Statistics
 1
 
 TEXTBOX
-962
+960
 335
-1184
+1182
 383
 Scenario setup \n(Click \"go\" afterwards!)
 18
 14.0
 1
 
-BUTTON
-1020
-386
+TEXTBOX
+960
+396
 1075
-419
+424
+Triple Filter Bubble Scenarios
+12
+0.0
+1
+
+BUTTON
+960
+436
+1015
+469
 1
 baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
@@ -1251,61 +1266,27 @@ NIL
 1
 
 BUTTON
-1077
-386
-1132
-419
-2
-baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-1019
-422
-1074
-455
-3
-baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-1077
-422
-1132
-455
-4
-baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-1018
+960
 472
-1073
+1015
 505
+3
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 1.0\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+960
+522
+1015
+555
 5
 baseline-settings\nset new-info-mode \"select close infobits\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
@@ -1319,10 +1300,95 @@ NIL
 1
 
 BUTTON
-1076
+960
+558
+1015
+591
+7
+baseline-settings\nset new-info-mode \"select close infobits\"\nset friend-posting-probability 1.0\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+960
+612
+1015
+645
+9
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 1.0\nset refriend-probability 0.01\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+960
+661
+1015
+694
+11
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 1.0\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1020
+436
+1075
+469
+2
+baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1020
 472
-1131
+1075
 505
+4
+baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 1.0\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1020
+522
+1075
+555
 6
 baseline-settings\nset new-info-mode \"select distant infobits\"\nset friend-posting-probability 0.0\nbaseline-visualization\nsetup
 NIL
@@ -1336,29 +1402,12 @@ NIL
 1
 
 BUTTON
-1018
-508
-1073
-541
-7
-baseline-settings\nset new-info-mode \"select close infobits\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-1076
-508
-1131
-541
+1020
+558
+1075
+591
 8
-baseline-settings\nset new-info-mode \"select distant infobits\"\nset friend-posting-probability 0.2\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"select distant infobits\"\nset friend-posting-probability 1.0\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1370,29 +1419,12 @@ NIL
 1
 
 BUTTON
-1016
-562
-1071
-595
-9
-baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset refriend-probability 0.01\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
+1020
+612
 1075
-562
-1130
-595
+645
 10
-baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset refriend-probability 1\nbaseline-visualization\nsetup
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 1.0\nset refriend-probability 1\nbaseline-visualization\nsetup
 NIL
 1
 T
@@ -1404,29 +1436,159 @@ NIL
 1
 
 BUTTON
-1017
-611
-1072
-644
-11
-baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
+1020
+661
 1075
-611
-1130
-644
+694
 12
 baseline-settings\nset new-info-mode \"central\"\nset friend-posting-probability 0.0\nset acceptance-latitude 0.5\nbaseline-visualization\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+
+TEXTBOX
+1100
+396
+1275
+424
+Broadening the Bubble Scenarios
+12
+0.0
+1
+
+BUTTON
+1100
+436
+1155
+469
+A1
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 1.0\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1160
+436
+1215
+469
+A2
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.5\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1100
+472
+1155
+505
+A3
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.2\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1160
+472
+1215
+505
+A4
+baseline-settings\nset new-info-mode \"individual\"\nset friend-posting-probability 0.05\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1100
+521
+1155
+554
+B1
+baseline-settings\nset new-info-mode \"individual\"\nset influencer-dominance 0.1\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1160
+521
+1215
+554
+B2
+baseline-settings\nset new-info-mode \"select close infobits\"\nset influencer-dominance 0.1\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1100
+570
+1155
+603
+C1
+baseline-settings\nset new-info-mode \"select close infobits\"\nset feed-system true\nset like-mode \"likes\"\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1160
+570
+1215
+603
+C2
+baseline-settings\nset new-info-mode \"select close infobits\"\nset feed-system true\nset like-mode \"likes and dislikes\"\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
 NIL
 1
 T
