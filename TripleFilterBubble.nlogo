@@ -693,7 +693,7 @@ BUTTON
 436
 686
 infosharer modularity
-infosharer-community-color\nupdate-plots\nshow nw:modularity communities
+infosharer-community-color\nupdate-plots\ntype \"modularity: \" type (precision nw:modularity communities 6) type \" communities: \" print length communities\n
 NIL
 1
 T
