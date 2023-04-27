@@ -120,26 +120,67 @@ end
 
 to new-infobits
   if not skip-all-visuals [ ask guys [ set oldxcor xcor set oldycor ycor ] ]
-
-  if new-info-mode = "central" [
+  (ifelse new-info-mode = "central" [
     create-infobits numcentral [
       initialize-infobit
-      ask guys [
-        try-integrate-infobit myself
-  ]]]
-  if new-info-mode = "individual" [
-    ask guys [create-and-spread-infobit
-  ]]
-  if new-info-mode = "select close infobits" or new-info-mode = "select distant infobits" [
+      ask guys [ try-integrate-infobit myself ]
+    ]
+  ] new-info-mode = "individual" [
+    ask guys [ create-and-spread-infobit ]
+  ] [
+    let neutral-infobit nobody
+    if new-info-mode = "balanced with neutral" [
+      create-infobits 1 [
+        initialize-infobit
+        ; This kinda works, but creates a central blob that outer agents are too far away to want to join.
+        ; setxy random-xcor / 3 ifelse-value (dims = 1) [0] [random-ycor / 3]
+        ; With a gaussian, they are more likely to see information which guides them into the right direction.
+        setxy max list min-pxcor min list max-pxcor (random-normal 0 6) max list min-pycor min list max-pycor (random-normal 0 6)
+        set neutral-infobit self
+      ]
+    ]
+    let is-balanced-mode (substring new-info-mode 0 8 = "balanced")
     ask guys [
-      let fitting-infobits ifelse-value (new-info-mode = "select close infobits")
-        [infobits with [distance myself / (max-pxcor + 0.5) < acceptance-latitude and not infolink-neighbor? myself]]
-        [infobits with [distance myself / (max-pxcor + 0.5) >= acceptance-latitude and not infolink-neighbor? myself]]
-      ifelse fitting-infobits = no-turtles or count infobits < numguys [
+      let selection-mode new-info-mode
+      if is-balanced-mode [
+        ifelse balanced-close-probability > random-float 1 [
+          set selection-mode "select close infobits" ; use existing implementation
+        ] [
+          if new-info-mode = "balanced with distant" [
+            set selection-mode "select distant infobits"
+          ]
+          if new-info-mode = "balanced with neutral" [
+            ; will not trigger code below, instead create neutral information
+            try-integrate-infobit neutral-infobit
+          ]
+        ]
+      ]
+      if selection-mode = "select close infobits" or selection-mode = "select distant infobits" or selection-mode = "select nearish infobits" [
+        ifelse count infobits < numguys [
           create-and-spread-infobit
-      ] [
-        try-integrate-infobit one-of fitting-infobits
-  ]]]
+        ] [
+          let fitting-infobits no-turtles
+          ifelse selection-mode = "select nearish infobits" [
+            set fitting-infobits infobits in-radius (1.5 * acceptance-latitude * (max-pxcor + 0.5)) with [0.75 * acceptance-latitude < distance myself / (max-pxcor + 0.5)]
+          ] [
+            let close-infobits infobits in-radius (acceptance-latitude * (max-pxcor + 0.5))
+            set fitting-infobits (ifelse-value
+              selection-mode = "select close infobits"
+              [close-infobits]
+              selection-mode = "select distant infobits"
+              [infobits with [not member? self close-infobits]]
+            )
+          ]
+          set fitting-infobits fitting-infobits with [not infolink-neighbor? myself and self != neutral-infobit]
+          ifelse fitting-infobits = no-turtles [
+            create-and-spread-infobit
+          ] [
+            try-integrate-infobit one-of fitting-infobits
+          ]
+        ]
+      ]
+    ]
+  ])
 end
 
 to create-and-spread-infobit
@@ -343,6 +384,7 @@ to baseline-settings
   set dims 2
   set birth-death-probability 0
   set refriend-probability 0
+  set balanced-close-probability 0.7
   set numcentral 2
   set stop-tick 10000
   set update-plots-every 200
@@ -1096,8 +1138,23 @@ CHOOSER
 520
 new-info-mode
 new-info-mode
-"individual" "central" "select close infobits" "select distant infobits"
-2
+"individual" "central" "select close infobits" "select distant infobits" "select nearish infobits" "balanced with distant" "balanced with neutral"
+6
+
+SLIDER
+10
+523
+152
+556
+balanced-close-probability
+balanced-close-probability
+0
+1
+0.7
+0.01
+1
+NIL
+HORIZONTAL
 
 SLIDER
 155
