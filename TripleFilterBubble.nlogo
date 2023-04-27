@@ -1763,7 +1763,7 @@ BUTTON
 1215
 701
 E2
-baseline-settings\nset new-info-mode \"balanced with neutral\"\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+baseline-settings\nset new-info-mode \"balanced with distant\"\nset friend-posting-probability 0.2\nset influencer-dominance 0.1\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
 NIL
 1
 T
@@ -1780,7 +1780,7 @@ BUTTON
 1155
 737
 E3
-baseline-settings\nset new-info-mode \"balanced with neutral\"\nset balanced-close-probability 0.0\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+baseline-settings\nset new-info-mode \"balanced with neutral\"\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
 NIL
 1
 T
@@ -1797,7 +1797,7 @@ BUTTON
 1215
 737
 E4
-baseline-settings\nset new-info-mode \"balanced with neutral\"\nset balanced-close-probability 0.0\nset friend-posting-probability 0.2\nset influencer-dominance 0.1\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
+baseline-settings\nset new-info-mode \"balanced with neutral\"\nset friend-posting-probability 0.2\nset influencer-dominance 0.1\nset pause-entropy 4.25\nbaseline-visualization\nset show-infolinks false\nsetup
 NIL
 1
 T
