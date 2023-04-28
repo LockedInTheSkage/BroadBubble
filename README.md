@@ -10,6 +10,9 @@ It is itsself an extension of the model provided by and discussed in the paper
 
 by _Daniel Geschke, Jan Lorenz, Peter Holtz_
 
+We recorded results from our simulation manually, but transferred them into a machine-readable format.
+The file documenting our simulation results can be found as `SimulationResults.json`.
+
 Some aspects of our extensions are explained in our research paper mentioned above.
 **All further details described here are from the original paper! We did not update this description.**
 
