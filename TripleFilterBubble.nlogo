@@ -902,7 +902,7 @@ PLOT
 531
 441
 651
-module/compent sizes
+module/component sizes
 NIL
 NIL
 0.0
@@ -2101,7 +2101,7 @@ This model is the basis of the paper
 
 **Broadening the Bubble: Technological Countermeasures to Isolation in an Agent-based Simulation of Social Media**
 
-by _Aksel Saugestad, Skage Klingstedt Reistad, Vira Antonova, Ovidiu Victor Tatar, Md. Anwarul Hasan_
+by _Aksel Saugestad, Skage Klingstedt Reistad, Vira Antonova, Ovidiu Victor Tătar, Md. Anwarul Hasan_
 
 It is itsself an extension of the model provided by and discussed in the paper
 
@@ -2110,18 +2110,25 @@ It is itsself an extension of the model provided by and discussed in the paper
 by _Daniel Geschke, Jan Lorenz, Peter Holtz_
 
 Some aspects of our extensions are explained in our research paper mentioned above.
-**All further details described here are from the original paper! We did not update this description.**
+**All further details described here are from the original paper! We updated the information, but most of the text was written by Geschke et al. and not by us.**
 
-We call it **triple filter bubble model** because information needs to pass three filters to reach our memories: Bits of information come to our attention through technology (including mass media, and filter algorithms), through our social network, and they have to pass the cognitive filters in our brains. This model is to test via simulations how these filters interact when information is attitudinally loaded and what this implies for the emerging distribution of attitudes in the population, e.g., concerning filter bubbles and echo chambers.
+Geschke et al. call it the **triple filter bubble model** because information needs to pass three filters to reach our memories: Bits of information come to our attention through technology (including mass media, and filter algorithms), through our social network, and they have to pass the cognitive filters in our brains. This model is to test via simulations how these filters interact when information is attitudinally loaded and what this implies for the emerging distribution of attitudes in the population, e.g., concerning filter bubbles and echo chambers.
 
-**Model synopsis**: Several individuals (represented by faces, called _guys_ in the following) position themselves in a two-dimensional attitude space based on attitudinal info-bits (gray dots) they hold in memory (gray info-links). Guys repeatedly receive new information with differing attitudinal messages from different sources. The sources of new information can be
+**Model synopsis**: Several individuals (represented by colored circles, called _guys_ in the following) position themselves in a two-dimensional attitude space based on attitudinal info-bits (gray dots) they hold in memory (gray info-links). Guys repeatedly receive new information with differing attitudinal messages from different sources. The sources of new information can be
 
    - individual discovery,
    - central announcement (representing mass media), or
-   - personalized recommendations, which either fits, or
-   - challenges the attitudes of the guy.
+   - personalized recommendations, which either
+     - fits the attitudes of the guy,
+     - challenges them,
+     - fits the attitudes, but not perfectly,
+     - fits the attitudes 70% of the time and challenges them 30% of the time, or
+     - fits the attitudes 70% of the time and proposes normally distributed information them 30% of the time.
 
-Further on, guys also receive posted information from their friends (yellow friend links) through a social network (social media channel). Guys integrate the information they receive through cognitive processes: They integrate a particular bit of information more likely when the distance of its attitudinal message to their attitude is below the latitude of acceptance. That means that it is unlikely that they integrate information that does not fit their pre-existing attitudes. Guys have a limited memory and can only integrate a certain amount of information. When memory is full, guys forget bits of information to integrate new ones. These processes lead to repositioning of guys in the attitudinal space according to the average information they consequently hold in their memory.
+Guys also receive posted information from their friends (yellow friend links) through a social network (social media channel).
+Further on, influencers can play a role and post information to a share of the whole network.
+
+Guys integrate the information they receive through cognitive processes: They integrate a particular bit of information more likely when the distance of its attitudinal message to their attitude is below the latitude of acceptance. That means that it is unlikely that they integrate information that does not fit their pre-existing attitudes. Guys have a limited memory and can only integrate a certain amount of information. When memory is full, guys forget bits of information to integrate new ones. These processes lead to repositioning of guys in the attitudinal space according to the average information they consequently hold in their memory.
 
 ## HOW IT WORKS
 
@@ -2153,22 +2160,27 @@ Guys can only have infolinks up to a maximum number of **memory** info-bits. Whe
 
 In each tick the following events take place:
 
-1) _New info-bits._ There are four **new-info-mode**'s for the creation of new info-bits.
+1) _New info-bits._ There are seven **new-info-mode**'s for the creation of new info-bits.
 
 In the _individual_ mode, each guy creates one info-bit at a random position and tries to integrate it. This mode represents individual discovery of new information.
 
 In the _central_ mode, one info-bit is created at random in the attitude space and every guy tries to integrate this info-bit. This represents mass media input from one central, unbiased channel (one-to-many communication).
 
-In the two remaining modes _select close info-bits_ and _select distant info-bits_, a new random info-bit is created and presented to each guy analogously to the _individual_ mode until the total number of info-bits is equal to the number of guys. This can take some ticks, because info-bits are not always integrated by guys. If the number of info-bits is equal to the number of guys, each guy is presented a random existing info-bit which is inside (in the mode _select close info-bits_) or outside (in the mode _select distant info-bits_) a radius of size acceptance-latitude around the guy's attitude position. This represents the use of a recommendation algorithm that aims to present info-bits which the receiver will integrate with a probability higher than 0.5 (_select close info-bits_) or, respectively, an info-bit which confronts the guy with very different (but perhaps interesting) information. Thus, the number of potential new info-links per guy per tick is one in all of the modes, while the total number of new info-bits per tick varies.
+In the five remaining modes, a new random info-bit is created and presented to each guy analogously to the _individual_ mode until the total number of info-bits is equal to the number of guys. This can take some ticks, because info-bits are not always integrated by guys. If the number of info-bits is equal to the number of guys, each guy is presented a random existing info-bit which is inside (in the mode _select close info-bits_) or outside (in the mode _select distant info-bits_) a radius of size acceptance-latitude around the guy's attitude position. This represents the use of a recommendation algorithm that aims to present info-bits which the receiver will integrate with a probability higher than 0.5 (_select close info-bits_) or, respectively, an info-bit which confronts the guy with very different (but perhaps interesting) information. The remaining three modes are a variation of these schemes, selecting information which does not perfectly match the guys lattitude of acceptance (_select nearish info-bits_), or they present close information most of the time (mimicing what a recommendation algorithm would prefer to do), and either distant (`balanced with distant`) or normally distributed information (`balanced with neutral`) occasionally.
+Each guy only receives one additional info-bits per tick.
 
-2) _Guys post info-bits to their friends._ If **friend-posting-probability** is activated, all guys, one after the other in a random order, select a random info-bit from their memory and post it to all friends in their social network. All of their friends try to integrate the new info-bit, which represents the propagation of information through social media. When friend-posting-probability is switched on, a guy receives on average numfriends additional info-bits per tick.
+2) _Guys post info-bits to their friends._ All guys, one after the other in a random order, select a random info-bit from their memory and post it to each friend in their social network with a probability of **friend-posting-probability**. The randomly selected friends try to integrate the new info-bit, which represents the propagation of information through social media.
+Each guy receives on average _numfriends × friend-posting-probability_ additional info-bits per tick.
 
-3) _Turn-over and refriending_  Each guy dies with probability **birth-death-probability** and is replaced by a new guy in a random position in the attitude space. Friend-links are inherited from the old guy created for the new guy such that the characteristics of the social network are preserved. New guys start with no info-links.
+3) _Influencers post info-bits to a fraction of the population._ Influencers post regularily as other guys do, but instead of posting to their friends, they post to a randomly selected share of **influencer-dominance** of all guys.
+Each guy receives on average _numguys × influencer-share × influencer-dominance_ additional info-bits per tick.
+
+4) _Turn-over and refriending_  Each guy dies with probability **birth-death-probability** and is replaced by a new guy in a random position in the attitude space. Friend-links are inherited from the old guy created for the new guy such that the characteristics of the social network are preserved. New guys start with no info-links.
 
 Afterward, each friend-link is subject to die with the probability **refriend-probability**. If a friendship is selected for potential death it stays alive based on a probabilistic event analogous to the integration of info-bits. Thus, friendships are more likely to vanish when the attitudinal distance of the friends is large, whereas friends with similar average attitudes are more likely to remain friends. When a friend-link dies, one randomly selected end of this link forms a new friend-link to a randomly selected friend of a friend with whom she is not friends yet. This re-friend mechanism preserves the number of friendships.
 
 Finally, each infobit which is not held in any guy's memory is removed.
-These three steps are repeated in the same order every tick.
+These steps are repeated in every tick.
 
 ## THINGS TO NOTICE AND TRY
 
@@ -2176,41 +2188,26 @@ Notice how clusters of guys emerge and if these clusters remain connected throug
 
 Check in the output measures which mean distance is largest under what conditions:
 
-  - mean distance to infobits (primarily determined by acceptance-latitude)
+  - entropy of the guys (as a measure of their overall spread)
   - mean distance to infosharer
   - mean distance to friends
+  - mean distance to infobits (primarily determined by acceptance-latitude)
 
 Speed up computation by lowering the number of times the plots are updated!
 
-Test the **12 scenario setups** from PAPER-REFERENCE.
-The parameters in the scenarios (cf. Table 1):
-
-No. new-info-mode social-posting acceptance-latitude refriend-probability
---
-1 individual off 0.3 0
-2 central off 0.3 02
-3 individual on 0.3 0
-4 central on 0.3 0
-5 select close infobits off 0.3 0
-6 select distant infobits off 0.3 0
-7 select close infobits on 0.3 0
-8 select distant infobits on 0.3 0
-9 individual on 0.3 0.01
-10 individual on 0.3 1
-11 individual on 0.5 0
-12 central off 0.5 0
+Test the **scenario setups** from both papers included in the model.
 
 In all scenarios the birth-death-probability is 0, the acceptance sharpness is 20 (quite sharp).
-
-The first eight scenarios use a refriend-probability of 0 and an acceptance-latitude of 0.3. Scenarios 1-4 test individual and central new information with and without social posting. Scenarios 5-8 test the "select close infobits" and "select distant infobits" filter" with and without social posting. Scenarios 9 and 10 have a positive refriend-probability, and scenarios 11 and 12 a larger acceptance-latitude.
 
 You can check that the number of groups in the friends network or its network-type to have only limited effect.
 
 
 ## CREDITS AND ACKNOWLEDGMENTS
-Programmed by Jan Lorenz
-Hosted https://github.com/janlorenz/TripleFilterBubble
-The work benefitted from a grant from the German Research Foundation (DFG) "Opinion Dynamics and Collective Decisions" LO2024 http://gepris.dfg.de/gepris/projekt/265108307?language=en
+Programmed by Jan Lorenz, extended by Skage Klingstedt Reistad and Ovidiu Victor Tătar
+
+Hosted [https://github.com/LockedInTheSkage/BroadBubble](https://github.com/LockedInTheSkage/BroadBubble)
+
+Original Model [https://github.com/janlorenz/TripleFilterBubble](https://github.com/janlorenz/TripleFilterBubble)
 @#$#@#$#@
 default
 true
